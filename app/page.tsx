@@ -80,10 +80,10 @@ export default function Home() {
                 <div className="md:w-1/2">
                   <div className="relative rounded-xl overflow-hidden shadow-2xl">
                     <Image
-                      src="/placeholder.svg?height=600&width=800"
+                      src="/placeholder.svg?height=500&width=800"
                       alt="AI Classification Dashboard"
                       width={800}
-                      height={600}
+                      height={500}
                       className="w-full h-auto"
                     />
                     <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent"></div>
