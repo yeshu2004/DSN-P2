@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Moon, Sun, Upload, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -17,6 +16,7 @@ export default function ClassifyPage() {
   const [imageResults, setImageResults] = useState<string[]>([])
   const [textResults, setTextResults] = useState<string[]>([])
   const [isDragging, setIsDragging] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode)
@@ -50,15 +50,45 @@ export default function ClassifyPage() {
     }
   }
 
-  const handleClassify = () => {
-    // Simulate classification results
+  const handleClassify = async () => {
+    setIsLoading(true)
+    setImageResults([])
+    setTextResults([])
+
     if (file) {
-      setImageResults(["Object: Person (98.2%)", "Scene: Outdoor (87.5%)", "Activity: Walking (76.3%)"])
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    try {
+      const response = await fetch(`${backendUrl}/classify`, {
+        method: 'POST',
+        body: formData,
+      });
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.status === "success") {
+            const result = data.result
+            setImageResults([`Prediction: ${result.prediction} (${result.confidence})`])
+          } else {
+            setImageResults(["Error: Failed to classify image"])
+          }
+        } else {
+          setImageResults(["Error: Server error"])
+        }
+      } catch (error) {
+        setImageResults(["Error: Network error"])
+        console.error(error)
+      }
     }
 
     if (text) {
+      // Simulate text classification (you can add a separate API endpoint for text if needed)
       setTextResults(["Sentiment: Positive (92.1%)", "Language: English (99.8%)", "Category: Technology (85.4%)"])
     }
+
+    setIsLoading(false)
   }
 
   return (
@@ -132,8 +162,12 @@ export default function ClassifyPage() {
               />
             </div>
 
-            <Button onClick={handleClassify} className="w-full py-6 text-lg font-medium" disabled={!file && !text}>
-              Classify Now
+            <Button
+              onClick={handleClassify}
+              className="w-full py-6 text-lg font-medium"
+              disabled={!file && !text || isLoading}
+            >
+              {isLoading ? "Classifying..." : "Classify Now"}
             </Button>
 
             {(imageResults.length > 0 || textResults.length > 0) && (
@@ -189,4 +223,3 @@ export default function ClassifyPage() {
     </div>
   )
 }
-
